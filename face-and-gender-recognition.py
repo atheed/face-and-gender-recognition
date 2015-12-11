@@ -278,7 +278,7 @@ def face_recognition(k):
             guesses_correct += 1
             guesses_all += 1
         else:
-            print('Incorrect guess')	
+            print('Incorrect guess')    
             guesses_all += 1
         
         print ("Total number of guesses: " + str(guesses_all) +
