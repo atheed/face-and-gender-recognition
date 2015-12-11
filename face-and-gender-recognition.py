@@ -16,12 +16,16 @@ from os.path import isfile, join
 from PIL import Image
 
 
-act = ['Aaron Eckhart',  'Adam Sandler',   'Adrien Brody',  'Andrea Anders',    'Ashley Benson',    'Christina Applegate',    'Dianna Agron',  'Gillian Anderson']
+act = ['Aaron Eckhart',  'Adam Sandler',   'Adrien Brody',  
+        'Andrea Anders',  'Ashley Benson',  'Christina Applegate',    
+        'Dianna Agron',  'Gillian Anderson']
 
 
 def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
-    '''From:
-    http://code.activestate.com/recipes/473878-timeout-function-using-threading/'''
+    '''
+    From:
+    http://code.activestate.com/recipes/473878-timeout-function-using-threading/
+    '''
     import threading
     class InterruptableThread(threading.Thread):
         def __init__(self):
@@ -46,12 +50,15 @@ testfile = urllib.URLopener()
 
 
 def pca(X):
-    """    Principal Component Analysis
-        input: X, matrix with training data stored as flattened arrays in rows
-        return: projection matrix (with important dimensions first), variance and mean.
-        From: Jan Erik Solem, Programming Computer Vision with Python
-        #http://programmingcomputervision.com/
-    """
+    '''    
+    Principal Component Analysis
+    
+    input: X, matrix with training data stored as flattened arrays in rows
+    return: projection matrix (with important dimensions first), variance and mean.
+        
+    From: Jan Erik Solem, Programming Computer Vision with Python
+    http://programmingcomputervision.com/
+    '''
     
     # get dimensions
     num_data,dim = X.shape
@@ -78,7 +85,7 @@ def pca(X):
     return V,S,mean_X
 
 
-def helper(line):
+def helper_bounding_box(line):
     '''
     Helper function to take face bounds given in a line (string), and 
     return a 4-tuple of the bounding box
@@ -93,7 +100,13 @@ def helper(line):
 
 
 def get_digit_matrix(img_dir):
-    im_files = sorted([img_dir + filename for filename in os.listdir(img_dir) if filename[-4:] == ".jpg"])
+    '''
+    Returns a 3-tuple representing all images in a given directory
+    (for Principal Component Analysis)
+    '''
+    im_files = sorted([img_dir + filename 
+                    for filename in os.listdir(img_dir) 
+                    if filename[-4:] == ".jpg"])
     im_shape = array(imread(im_files[0])).shape[:2] # open one image to get the size 
     im_matrix = array([imread(im_file).flatten() for im_file in im_files])
     im_matrix = array([im_matrix[i,:]/(norm(im_matrix[i,:] + 0.0001)) for i in range(im_matrix.shape[0])])
@@ -101,7 +114,9 @@ def get_digit_matrix(img_dir):
 
 
 def display_save_25_comps(proj_matrix, im_shape):
-    '''Display 25 components in V'''
+    '''
+    Display first 25 components in the projection matrix
+    '''
     figure()
     for i in range(25):
         plt.subplot(5, 5, i+1)
@@ -127,7 +142,7 @@ def download():
                 # the bounds of the face in the image are appended to the filename.
                 # this is done so that we can later crop the faces using these
                 # box bounds. puts these files in the 'uncropped' folder
-                timeout(testfile.retrieve, (line.split()[4], "uncropped/"+filename), {}, 30)
+                timeout(testfile.retrieve, (line.split()[4], "uncropped/" + filename), {}, 30)
                 if not os.path.isfile("uncropped/"+filename):
                     continue
     
@@ -143,7 +158,7 @@ def crop_and_grey():
     onlyfiles = [ f for f in listdir("uncropped") if isfile(join("uncropped",f)) ]
     for f in onlyfiles:
         try:
-            box = helper(f)
+            box = helper_bounding_box(f)
             im = Image.open('uncropped/'+f).convert('L')
             cropped = np.asarray(im.crop(box))
             while cropped.shape[0]>64:
@@ -175,7 +190,8 @@ def closest_match(im_matrix, proj_matrix, image, mean_im, k):
     
     # normalize the all_weights array, in the same way get_digit_matrix does
     all_weights = np.array(all_weights)
-    all_weights = array([all_weights[i,:]/(norm(all_weights[i,:] + 0.0001)) for i in range(all_weights.shape[0])])
+    all_weights = array([all_weights[i,:]/(norm(all_weights[i,:] + 0.0001)) 
+                        for i in range(all_weights.shape[0])])
     
     # will hold the weights relating to the input image
     image_weights = []
